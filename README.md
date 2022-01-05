@@ -1,2 +1,2 @@
 # stock
-stock analisys ai
+stock analysis ai
