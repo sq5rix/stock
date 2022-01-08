@@ -46,12 +46,10 @@ def get_multi(stocks, cryptos):
 def add_multi(stocks, cryptos, df):
     for a in stocks:
         x = get_stock(a)
-        x = x[x.index>get_last_date(df)]
-        df = df.append(x)
+        df = df.append(x[x.index>get_last_date(df)])
     for b in cryptos:
         x = get_crypto(b)
-        x = x[x.index>get_last_date(df)]
-        df = df.append(x)
+        df = df.append(x[x.index>get_last_date(df)])
     return df
 
 def get_all_stocks():
