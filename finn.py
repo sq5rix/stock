@@ -1,10 +1,13 @@
+import traceback
 import pandas as pd
 import arrow
 import json
 from secrets import AV_API_KEY
 import requests
+from time import sleep
 
 DATA_FILE = 'datafile.pickle'
+SP500 = 'sp500.csv'
 
 def get_last_date(df):
     return max(df.index)
@@ -15,18 +18,32 @@ def get_stock(ticker, all_data=False):
         url += '&outputsize=full'
     index = 'Time Series (15min)'
     r = requests.get(url)
-    df = pd.DataFrame(r.json()[index]).T
-    df['ticker']=ticker
+    try:
+        df = pd.DataFrame(r.json()[index]).T
+        df['ticker']=ticker
+        sleep(5)
+        print(f"ticker: {ticker}, len: {len(df)}")
+    except:
+        print(traceback.format_exc(limit=3))
+        print("err ticker: ", ticker)
+        return pd.DataFrame()
     return df
 
 def get_crypto(ticker, all_data=False):
-    url = f'https://www.alphavantage.co/query?function=CRYPTO_INTRADAY&symbol={ticker}&market=USD&slice=year1month12&interval=15min&apikey={AV_API_KEY}'
+    url = f'https://www.alphavantage.co/query?function=CRYPTO_INTRADAY&symbol={ticker}&market=USD&slice=year2month12&interval=15min&apikey={AV_API_KEY}'
     if all_data:
         url += '&outputsize=full'
     index = 'Time Series Crypto (15min)'
-    r = requests.get(url)
-    df = pd.DataFrame(r.json()[index]).T
-    df['ticker']=ticker
+    try:
+        r = requests.get(url)
+        df = pd.DataFrame(r.json()[index]).T
+        df['ticker']=ticker
+        print(f"ticker: {ticker}, len: {len(df)}")
+    except:
+        print(traceback.format_exc(limit=3))
+        print("err ticker: ", ticker)
+        return pd.DataFrame()
+    sleep(5)
     return df
 
 def save_df(df):
@@ -53,7 +70,8 @@ def add_multi(stocks, cryptos, df):
     return df
 
 def get_all_stocks():
-    return ['IBM', 'AAPL']
+    sp500 = pd.read_csv(SP500)
+    return sp500['Symbol']
 
 def get_all_crypto():
     return ['BTC', 'ETH']
@@ -64,8 +82,10 @@ def start_calcs():
     return df
 
 if __name__ == '__main__':
-    #df = start_calcs()
-    df = read_df()
-    print(df)
+    #print('get_all_stocks: ', list(get_all_stocks()))
+    df = start_calcs()
+    save_df(df)
+    #df = read_df()
+    #print(df)
     print('get_last_date(df): ', get_last_date(df))
 
